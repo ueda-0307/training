@@ -16,16 +16,17 @@ import class_melcor as MERCOR
 import class_cf as CF
 import class_tf as TF
 import class_logicerror as LOGICERROR
-import class_gui as GUI
+#import class_gui as GUI
 
 #GUI関連
 import PySide6
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 from PySide6 import QtCore, QtGui
-from PySide6.QtWidgets import (QApplication,QWidget)
+#from PySide6.QtWidgets import (QApplication,QWidget)
 from PySide6.QtGui import (QPixmap) # Qtで画像を扱うのに必要
-
+from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidget, QListWidgetItem)
+from PySide6.QtWidgets import QLabel,QWidget
 ###外部入力にした方が実用的
 #読み込みファイル名
 filepath = "HPI_sample_input.txt"
@@ -152,19 +153,46 @@ for cf in CF_list:
 #表示＆保存
 filename = "./draw"
 pngfile = filename + ".png"
-g.render(filename, view=True)
+g.render(filename, view=False)
 
-#GUI作成
-#画面がインスタントされていなかった場合は作成し、既にインスタントされてるなら呼び出す
-if not QApplication.instance():
-    app = QApplication()             #新規作成
-else:
-    app = QApplication.instance()    #呼び出し
+
           
-#app = QApplication(sys.argv)   # PySide6の実行
-window = GUI.MainWindow(cfid,pngfile)   # ユーザがコーディングしたクラス
-window.show()                   # PySide6のウィンドウを表示
-sys.exit(app.exec())            # PySide6の終了
+class MainWindow(QMainWindow,QWidget):
+    
+    def __init__(self,cfid,pngfile, parent=None):
+        # 親クラスの初期化
+        super().__init__(parent)
+        
+        #debug
+        #print(cfid)
+        
+        # ウィンドウタイトル
+        self.setWindowTitle("練習中")
+        
+        # ウィンドウの位置とサイズの変更
+        xPos = 400  # x座標（px単位）
+        yPos = 500  # y座標（px単位）
+        windowWidth = 600   # ウィンドウの横幅（px単位）
+        windowHeight = 400  # ウィンドウの高さ（px単位）
+        self.setGeometry(xPos, yPos, windowWidth, windowHeight)
+        
+        #リストの配置
+        self.listWidget = QListWidget()
+        self.setCentralWidget(self.listWidget)
+        
+        # Listにアイテムを追加する
+        for i in cfid:
+            item = QListWidgetItem(i, self.listWidget)
+            # 背景色を指定したい場合
+            #item.setBackground(QBrush(QColor(255, 0, 0)))
+            self.listWidget.itemClicked.connect(self.clicked)
+    
+    
+    def clicked(self, item):
+        # Signalで受け取る場合
+        print(item.text())
+        # listWidgetから選択されている値を取得したい場合
+        print(self.listWidget.currentItem().text()) 
 
 
 if __name__ == '__main__':
@@ -173,5 +201,14 @@ if __name__ == '__main__':
     plugin_path = os.path.join(dirname, 'plugins', 'platforms')
     os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
     
+    #print(pngfile)
+    
+    #ウィンドウ作成
+    app = QApplication.instance()   # PySide6の実行
+    #app = QApplication(sys.argv)
+    #window = GUI.MainWindow(cfid,pngfile)   # ユーザがコーディングしたクラス
+    window = MainWindow(cfid,pngfile)   # ユーザがコーディングしたクラス
+    window.show()                   # PySide6のウィンドウを表示
+    sys.exit(app.exec())            # PySide6の終了
 
     pass
