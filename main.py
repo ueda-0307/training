@@ -159,7 +159,7 @@ g.render(filename, view=False)
           
 class MainWindow(QMainWindow,QWidget):
     
-    def __init__(self,cfid,pngfile, parent=None):
+    def __init__(self,CF_list, parent=None):
         # 親クラスの初期化
         super().__init__(parent)
         
@@ -179,14 +179,13 @@ class MainWindow(QMainWindow,QWidget):
         #リストの配置
         self.listWidget = QListWidget()
         self.setCentralWidget(self.listWidget)
-        
+
         # Listにアイテムを追加する
-        for i in cfid:
-            item = QListWidgetItem(i, self.listWidget)
+        for cf in CF_list:
+            item = QListWidgetItem(cf.name, self.listWidget)
             # 背景色を指定したい場合
             #item.setBackground(QBrush(QColor(255, 0, 0)))
             self.listWidget.itemClicked.connect(self.clicked)
-    
     
     def clicked(self, item):
         # Signalで受け取る場合
@@ -207,7 +206,7 @@ if __name__ == '__main__':
     app = QApplication.instance()   # PySide6の実行
     #app = QApplication(sys.argv)
     #window = GUI.MainWindow(cfid,pngfile)   # ユーザがコーディングしたクラス
-    window = MainWindow(cfid,pngfile)   # ユーザがコーディングしたクラス
+    window = MainWindow(CF_list)   # ユーザがコーディングしたクラス
     window.show()                   # PySide6のウィンドウを表示
     sys.exit(app.exec())            # PySide6の終了
 
