@@ -25,7 +25,7 @@ from PySide6 import QtWidgets
 from PySide6 import QtCore, QtGui
 from PySide6.QtGui import (QPixmap) # Qtで画像を扱うのに必要
 from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidget, QListWidgetItem,
-                               QHBoxLayout, QPushButton)
+                               QHBoxLayout, QPushButton,QVBoxLayout)
 from PySide6.QtWidgets import QLabel,QWidget
 ###外部入力にした方が実用的
 #読み込みファイル名
@@ -122,13 +122,13 @@ class InputGenerator(object):
         for cf in self.CF_list:
             try:
                cf.convert()
-                #デバッグ確認
-                #print(cf.name)
-                #print(cf.no)
-                #print(cf.logic)
-                #print(cf.connect_name)
-            
-            #エラーチェック(logic)
+        #        #デバッグ確認
+        #        #print(cf.name)
+        #        #print(cf.no)
+        #        #print(cf.logic)
+        #        #print(cf.connect_name)
+        #    
+        #    #エラーチェック(logic)
             except LOGICERROR.LogicNotFoundError as e:
                 print(e)
                 pass
@@ -136,29 +136,29 @@ class InputGenerator(object):
         #関係図の描画
         #g = Graph()        #矢印なし描画   default:PDF  例：Graph(format='png')
         #g = Digraph()       #矢印あり描画   default:PDF  例：Digraph(format='png')
-        g = Digraph(format='png')
-        g.attr('graph', rankdir='LR')    #TYPE 描画方向のタイプを定義 default：縦方向　LRで横方向
-        g.attr('node' , shape='square')  #TYPE node描画のタイプを定義
+        #g = Digraph(format='png')
+        #g.attr('graph', rankdir='LR')    #TYPE 描画方向のタイプを定義 default：縦方向　LRで横方向
+        #g.attr('node' , shape='square')  #TYPE node描画のタイプを定義
         
-        cfid = []
-        for cf in self.CF_list:
-            #cf.connect取得
-            cf.make_link(self.CF_list)
-            #デバッグ確認
-            #print(cf.name)
-            #print(cf.connect)
-            
-            #cfのIDをリスト化(後で描画するため)
-            cfid.append(cf.name)
-            
-            #接続先のループ
-            for connect in cf.connect:
-                # edgeを追加
-                g.edge(cf.name, connect)   #接続を格納  引数3はラベル。条件分岐の真偽など記載した方がわかりやすくなる
+        #cfid = []
+        #for cf in self.CF_list:
+        #    #cf.connect取得
+        #    cf.make_link(self.CF_list)
+        #    #デバッグ確認
+        #    #print(cf.name)
+        #    #print(cf.connect)
+        #    
+        #    #cfのIDをリスト化(後で描画するため)
+        #    cfid.append(cf.name)
+        #    
+        #    #接続先のループ
+        #    for connect in cf.connect:
+        #        # edgeを追加
+        #        g.edge(cf.name, connect)   #接続を格納  引数3はラベル。条件分岐の真偽など記載した方がわかりやすくなる
         #表示＆保存
-        filename = "./draw"
-        pngfile = filename + ".png"
-        g.render(filename, view=False)
+        #filename = "./draw"
+        #pngfile = filename + ".png"
+        #g.render(filename, view=False)
               
 class MainWindow(QMainWindow,QWidget):
     
@@ -178,17 +178,21 @@ class MainWindow(QMainWindow,QWidget):
         windowHeight = 400  # ウィンドウの高さ（px単位）
         self.setGeometry(xPos, yPos, windowWidth, windowHeight)
         
-        central_widget = QWidget()
-        hbox = QHBoxLayout()
+        central_widget = QWidget()   #central_widgetにQWidgetの機能追加
+        hbox = QVBoxLayout()         #hboxにQVBoxLayoutの機能追加
 
-        self.listWidget = QListWidget()
-        hbox.addWidget(self.listWidget)
-        button = QPushButton('Load')
-        button.clicked.connect(self.on_load)
-        hbox.addWidget(button)
-        central_widget.setLayout(hbox)
+        #白枠の設定
+        self.listWidget = QListWidget() #listWidgetにQListWidgetの機能追加
+        hbox.addWidget(self.listWidget) #hboxにlistWidgetを追加？listWidgetとは？
+        
+        #ボタンの設定
+        button = QPushButton('Load')  #押下ボタンを作成(文字列:Load)
+        button.clicked.connect(self.on_load) #ボタンの押下処理
+        hbox.addWidget(button)         #hboxにボタン情報登録
+        
+        central_widget.setLayout(hbox) #ウィジェットのレイアウトにself.listWidgetとbuttonをセット
                 
-        self.setCentralWidget(central_widget)
+        self.setCentralWidget(central_widget) #中央のウィジェットにcentral_widgetを描画
 
         """
         # Listにアイテムを追加する
@@ -199,18 +203,42 @@ class MainWindow(QMainWindow,QWidget):
             self.listWidget.itemClicked.connect(self.clicked)
         """
     
+    #ボタン押下処理
     def on_load(self):
+        #CF読み込み
         print('Load data')
         input_generator = InputGenerator()
         input_generator.read(filepath)
-        self.CF_list = input_generator.CF_list
-        print(self.CF_list)
+        self.CF_list = input_generator.CF_list  #input_generator.CF_list変数をこっちのクラスで読み込む
+        
+        #関係図の描画
+        #g = Graph()        #矢印なし描画   default:PDF  例：Graph(format='png')
+        #g = Digraph()       #矢印あり描画   default:PDF  例：Digraph(format='png')
+        g = Digraph(format='png')
+        g.attr('graph', rankdir='LR')    #TYPE 描画方向のタイプを定義 default：縦方向　LRで横方向
+        g.attr('node' , shape='square')  #TYPE node描画のタイプを定義
+        
+        for cf in self.CF_list:
+            #cf.connect取得
+            cf.make_link(self.CF_list)
+            
+            #接続先のループ
+            for connect in cf.connect:
+                # edgeを追加
+                g.edge(cf.name, connect)   #接続を格納  引数3はラベル。条件分岐の真偽など記載した方がわかりやすくなる
+        #表示＆保存
+        filename = "./draw"
+        pngfile = filename + ".png"
+        g.render(filename, view=False)
+        
+        
+        
     
-    def clicked(self, item):
+    #def clicked(self, item):
         # Signalで受け取る場合
-        print(item.text())
+    #    print(item.text())
         # listWidgetから選択されている値を取得したい場合
-        print(self.listWidget.currentItem().text()) 
+    #    print(self.listWidget.currentItem().text()) 
 
 
 if __name__ == '__main__':
